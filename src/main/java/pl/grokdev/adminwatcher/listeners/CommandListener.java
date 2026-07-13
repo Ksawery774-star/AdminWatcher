@@ -11,8 +11,8 @@ import pl.grokdev.adminwatcher.utils.LogManager;
 import java.util.List;
 
 /**
- * Słucha komend graczy i loguje te, które nas interesują.
- * Proste i skuteczne.
+ * Słucha komend i loguje te ważne.
+ * Próbuje też parsować /give.
  */
 public class CommandListener implements Listener {
 
@@ -31,26 +31,23 @@ public class CommandListener implements Listener {
         Player p = e.getPlayer();
         if (p.hasPermission("adminwatcher.bypass")) return;
 
-        String msg = e.getMessage().toLowerCase().trim();
-        String cmdName = msg.split(" ")[0].replace("/", "");
+        String msg = e.getMessage().trim();
+        String lower = msg.toLowerCase();
+        String cmdName = lower.split(" ")[0].replace("/", "");
 
-        if (!config.getMonitoredCommands().contains(cmdName) && 
-            !config.getMonitoredCommands().contains("minecraft:" + cmdName)) {
+        if (!config.getMonitoredCommands().contains(cmdName)) {
             return;
         }
 
-        // Logujemy komendę
         String location = p.getWorld().getName() + " " + p.getBlockX() + "," + p.getBlockY() + "," + p.getBlockZ();
-        String logMsg = p.getName() + " wykonał: " + e.getMessage() + " | " + location;
+        String logMsg = p.getName() + " >> " + msg + " | " + location;
         logManager.log("COMMAND", logMsg);
 
-        // Sprawdzamy czy to give i czy był niedawno w creative
-        if (config.isSuspiciousEnabled() && isGiveCommand(cmdName)) {
-            logManager.checkSuspiciousGive(p, e.getMessage());
+        // Specjalne przetwarzanie give i gamemode
+        if (cmdName.contains("give") || cmdName.contains("item")) {
+            logManager.handleGiveCommand(p, msg);
+        } else if (cmdName.contains("gamemode") || cmdName.contains("gm")) {
+            logManager.handleGamemodeCommand(p, msg);
         }
-    }
-
-    private boolean isGiveCommand(String cmd) {
-        return cmd.equals("give") || cmd.equals("minecraft:give") || cmd.equals("i") || cmd.equals("item");
     }
 }

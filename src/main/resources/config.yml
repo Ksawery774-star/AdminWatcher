@@ -1,9 +1,7 @@
-# AdminWatcher v2.2
-# Czysta konfiguracja
+# AdminWatcher v2.3 - Konfiguracja
 
 log-creative: true
 
-# Komendy które będziemy logować
 monitored-commands:
   - give
   - minecraft:give
@@ -17,16 +15,21 @@ monitored-commands:
   - effect
   - summon
 
-# Discord webhook (opcjonalnie)
-discord:
+# Discord
+ discord:
   enabled: false
   webhook-url: ""
 
-# Ustawienia wykrywania podejrzanej aktywności
+# Wykrywanie podejrzanej aktywności
 suspicious:
   enabled: true
-  # Okno w sekundach: creative + give = alert
-  creative-give-window: 45
+  creative-give-window: 60
+  # Minimalna ilość itemów do uznania za podejrzaną (przy give)
+  min-give-amount: 32
 
-# Ile logów trzymać w pamięci do komendy /adminlogs
-max-logs-memory: 300
+# Opcje auto-reakcji (ostrożnie!)
+auto-actions:
+  enabled: false
+  on-suspicious: "warn"   # warn / kick / ban
+
+max-logs-memory: 500
