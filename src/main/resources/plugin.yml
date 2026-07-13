@@ -4,18 +4,20 @@ main: pl.grokdev.adminwatcher.AdminWatcher
 api-version: 1.21
 load: STARTUP
 author: Grok MC Developer
-description: Monitoruje administrację - gm1, give i podejrzane komendy
+description: Zaawansowane monitorowanie administracji - gm1, give, podejrzane akcje + Discord
 
 commands:
   adminwatcher:
-    description: Komenda główna pluginu AdminWatcher
-    usage: /<command> [reload]
+    description: Główna komenda pluginu
+    usage: /<command> reload
+    permission: adminwatcher.admin
+  adminlogs:
+    description: Przeglądanie logów administracji
+    usage: /<command> [ilość]
     permission: adminwatcher.admin
 
 permissions:
   adminwatcher.admin:
-    description: Dostęp do komendy /adminwatcher
     default: op
   adminwatcher.bypass:
-    description: Pomija logowanie akcji
     default: false
