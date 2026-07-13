@@ -36,30 +36,30 @@ public class LogManager {
         String timestamp = LocalDateTime.now().format(formatter);
         String fullLog = String.format("[%s] [%s] %s", timestamp, type, message);
 
-        // Do pliku
+        // Zapisujemy do pliku – żeby nawet po restarcie było co czytać
         writeToFile(fullLog);
 
-        // Do konsoli
+        // Wyrzucamy na konsolę z czerwonym kolorem, żeby od razu rzucało się w oczy
         Bukkit.getConsoleSender().sendMessage("\u00a7c[ADMIN-WATCH] " + fullLog);
 
-        // Do pamięci (dla /adminlogs)
+        // Dodajemy do pamięci – /adminlogs działa od razu
         addToRecent(fullLog);
 
-        // Discord
+        // Jeśli Discord włączony – wysyłamy
         if (configManager.isDiscordEnabled() && !configManager.getDiscordWebhook().isEmpty()) {
             DiscordWebhook.send(configManager.getDiscordWebhook(), 
-                "**AdminWatcher Alert**\n" + fullLog + "\nGracz: " + player.getName());
+                "**AdminWatcher** - ktoś coś kombinował:\n" + fullLog);
         }
     }
 
     public void logSuspicious(Player player, String reason) {
-        String msg = String.format("Podejrzana aktywność: %s | Gracz: %s", reason, player.getName());
+        // Tu dajemy znać, że coś śmierdzi
+        String msg = String.format("Podejrzana akcja: %s | Gracz: %s", reason, player.getName());
         log("SUSPICIOUS", msg, player);
     }
 
     public void checkRecentCreativeGive(Player player) {
-        // Prosta implementacja - można rozbudować o timestampy per gracz
-        // Na razie loguje jeśli gracz jest w creative i używa give (obsługiwane w CommandListener)
+        // Na razie prosta wersja – jeśli chcesz pełne okno czasowe daj znać
     }
 
     private void addToRecent(String log) {
@@ -83,11 +83,11 @@ public class LogManager {
             writer.write(message);
             writer.newLine();
         } catch (IOException e) {
-            plugin.getLogger().warning("Błąd zapisu logu: " + e.getMessage());
+            plugin.getLogger().warning("Nie udało się zapisać logu do pliku: " + e.getMessage());
         }
     }
 
     public void saveAll() {
-        // Na przyszłość - flush
+        // Na razie nic specjalnego, ale zostawiamy na przyszłość
     }
 }

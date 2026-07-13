@@ -42,7 +42,8 @@ public class CommandListener implements Listener {
         }
 
         if (shouldLog) {
-            String logMessage = String.format("%s użył komendy: %s | Lok: %s %d,%d,%d",
+            // Tu logujemy co admin zrobił – żeby później nie było "a bo ja nie wiedziałem"
+            String logMessage = String.format("%s użył: %s | Świat: %s | x:%d y:%d z:%d",
                     player.getName(),
                     event.getMessage(),
                     player.getWorld().getName(),
@@ -50,11 +51,11 @@ public class CommandListener implements Listener {
 
             logManager.log("COMMAND", logMessage, player);
 
-            // Sprawdzenie podejrzanej aktywności (creative + give)
+            // Jeśli gracz jest w creative i daje sobie rzeczy – od razu alert
             if (configManager.isSuspiciousEnabled() && 
                 (cmd.equals("give") || cmd.equals("minecraft:give") || cmd.equals("i") || cmd.equals("item"))) {
                 if (player.getGameMode() == org.bukkit.GameMode.CREATIVE) {
-                    logManager.logSuspicious(player, "Gracz w creative użył /give");
+                    logManager.logSuspicious(player, "W creative użył /give – klasyka");
                 }
             }
         }

@@ -16,20 +16,21 @@ public class AdminWatcher extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        // Inicjalizacja
+        // Ładujemy config i logi – standardowa sprawa
         this.configManager = new ConfigManager(this);
         this.logManager = new LogManager(this, configManager);
 
-        // Rejestracja listenerów
+        // Rejestrujemy listenery – tu się dzieje magia pilnowania
         getServer().getPluginManager().registerEvents(new CommandListener(this, logManager, configManager), this);
         getServer().getPluginManager().registerEvents(new GameModeListener(this, logManager, configManager), this);
 
-        // Rejestracja komend
+        // Komendy – żeby właściciel mógł szybko sprawdzić co się dzieje
         getCommand("adminwatcher").setExecutor(new AdminWatcherCommand(this, configManager, logManager));
         getCommand("adminlogs").setExecutor(new AdminLogsCommand(logManager));
 
-        getLogger().info("\u00a7a[AdminWatcher] v2.0 włączony! Zaawansowane monitorowanie administracji aktywne.");
-        getLogger().info("\u00a7e[AdminWatcher] Użyj /adminlogs aby zobaczyć ostatnie akcje adminów.");
+        // Wiadomość startowa – żeby było widać, że działa
+        getLogger().info("\u00a7a[AdminWatcher] v2.1 odpalił się pomyślnie! Pilnuję adminów jak trzeba 🔥");
+        getLogger().info("\u00a7e[AdminWatcher] Wpisz /adminlogs żeby zobaczyć co admini ostatnio wyczyniali.");
     }
 
     @Override
@@ -37,7 +38,7 @@ public class AdminWatcher extends JavaPlugin {
         if (logManager != null) {
             logManager.saveAll();
         }
-        getLogger().info("\u00a7c[AdminWatcher] Plugin wyłączony.");
+        getLogger().info("\u00a7c[AdminWatcher] Plugin się wyłącza... do następnego razu!");
     }
 
     public ConfigManager getConfigManager() {

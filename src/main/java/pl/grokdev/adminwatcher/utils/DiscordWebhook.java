@@ -14,6 +14,7 @@ public class DiscordWebhook {
         if (webhookUrl == null || webhookUrl.isEmpty()) return;
 
         try {
+            // Prosty webhook – nie chcemy tu komplikować życia
             String json = "{\"content\": \"" + escapeJson(content) + "\"}";
 
             HttpRequest request = HttpRequest.newBuilder()
@@ -24,7 +25,7 @@ public class DiscordWebhook {
 
             client.sendAsync(request, HttpResponse.BodyHandlers.discarding());
         } catch (Exception e) {
-            // Cicho ignorujemy błędy webhooka, żeby nie spamować konsoli
+            // Cicho – nie spamujemy konsoli przy błędzie Discorda
         }
     }
 

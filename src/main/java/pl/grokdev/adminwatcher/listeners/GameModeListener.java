@@ -30,14 +30,14 @@ public class GameModeListener implements Listener {
         if (player.hasPermission("adminwatcher.bypass")) return;
 
         if (event.getNewGameMode() == GameMode.CREATIVE) {
-            String logMessage = String.format("%s zmienił gamemode na CREATIVE | Lok: %s %d,%d,%d",
+            // Klasyczna sytuacja – admin wchodzi w gm1 żeby "coś przetestować"
+            String logMessage = String.format("%s wszedł w CREATIVE | Świat: %s | x:%d y:%d z:%d",
                     player.getName(),
                     player.getWorld().getName(),
                     player.getBlockX(), player.getBlockY(), player.getBlockZ());
 
             logManager.log("GAMEMODE", logMessage, player);
 
-            // Opcjonalnie: sprawdzenie czy gracz był niedawno w creative i dał sobie rzeczy
             if (configManager.isSuspiciousEnabled()) {
                 logManager.checkRecentCreativeGive(player);
             }
