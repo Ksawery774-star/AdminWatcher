@@ -1,0 +1,18 @@
+# AdminWatcher Configuration
+# Lista komend do monitorowania (case-insensitive)
+monitored-commands:
+  - give
+  - minecraft:give
+  - i
+  - item
+  - gamemode
+  - gm
+  - op
+  - deop
+  - enchant
+  - effect
+  - summon
+  - clear
+
+# Czy logować zmiany gamemode na CREATIVE
+log-creative: true
