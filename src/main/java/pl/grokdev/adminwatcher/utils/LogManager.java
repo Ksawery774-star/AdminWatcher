@@ -10,84 +10,97 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
+/**
+ * Zarządza logowaniem.
+ * Trzyma ostatnie logi w pamięci + zapisuje do pliku.
+ * Ma też prostą logikę wykrywania podejrzanej aktywności.
+ */
 public class LogManager {
 
     private final JavaPlugin plugin;
-    private final ConfigManager configManager;
+    private final ConfigManager config;
     private final File logFile;
     private final LinkedList<String> recentLogs = new LinkedList<>();
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private final Map<UUID, Long> lastCreativeTime = new HashMap<>();
+    private final DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public LogManager(JavaPlugin plugin, ConfigManager configManager) {
+    public LogManager(JavaPlugin plugin, ConfigManager config) {
         this.plugin = plugin;
-        this.configManager = configManager;
+        this.config = config;
 
-        File dataFolder = plugin.getDataFolder();
-        if (!dataFolder.exists()) dataFolder.mkdirs();
-
-        this.logFile = new File(dataFolder, "admin-logs.log");
+        File folder = plugin.getDataFolder();
+        if (!folder.exists()) folder.mkdirs();
+        this.logFile = new File(folder, "admin-logs.log");
     }
 
-    public void log(String type, String message, Player player) {
-        String timestamp = LocalDateTime.now().format(formatter);
-        String fullLog = String.format("[%s] [%s] %s", timestamp, type, message);
+    /**
+     * Główna metoda logująca.
+     */
+    public void log(String type, String message) {
+        String timestamp = LocalDateTime.now().format(timeFormat);
+        String full = "[" + timestamp + "] [" + type + "] " + message;
 
-        // Zapisujemy do pliku – żeby nawet po restarcie było co czytać
-        writeToFile(fullLog);
+        writeToFile(full);
+        Bukkit.getConsoleSender().sendMessage("\u00a7c[AdminWatch] " + full);
+        addToRecent(full);
 
-        // Wyrzucamy na konsolę z czerwonym kolorem, żeby od razu rzucało się w oczy
-        Bukkit.getConsoleSender().sendMessage("\u00a7c[ADMIN-WATCH] " + fullLog);
-
-        // Dodajemy do pamięci – /adminlogs działa od razu
-        addToRecent(fullLog);
-
-        // Jeśli Discord włączony – wysyłamy
-        if (configManager.isDiscordEnabled() && !configManager.getDiscordWebhook().isEmpty()) {
-            DiscordWebhook.send(configManager.getDiscordWebhook(), 
-                "**AdminWatcher** - ktoś coś kombinował:\n" + fullLog);
+        if (config.isDiscordEnabled() && !config.getDiscordWebhook().isEmpty()) {
+            DiscordWebhook.send(config.getDiscordWebhook(), full);
         }
     }
 
-    public void logSuspicious(Player player, String reason) {
-        // Tu dajemy znać, że coś śmierdzi
-        String msg = String.format("Podejrzana akcja: %s | Gracz: %s", reason, player.getName());
-        log("SUSPICIOUS", msg, player);
+    /**
+     * Zapisuje czas wejścia gracza w creative.
+     */
+    public void recordCreativeEntry(Player player) {
+        lastCreativeTime.put(player.getUniqueId(), System.currentTimeMillis());
     }
 
-    public void checkRecentCreativeGive(Player player) {
-        // Na razie prosta wersja – jeśli chcesz pełne okno czasowe daj znać
+    /**
+     * Sprawdza czy gracz dał sobie rzeczy niedługo po wejściu w creative.
+     */
+    public void checkSuspiciousGive(Player player, String fullCommand) {
+        if (!config.isSuspiciousEnabled()) return;
+
+        Long lastCreative = lastCreativeTime.get(player.getUniqueId());
+        if (lastCreative == null) return;
+
+        long secondsAgo = (System.currentTimeMillis() - lastCreative) / 1000;
+        if (secondsAgo <= config.getCreativeGiveWindow()) {
+            String alert = player.getName() + " wszedł w creative i po " + secondsAgo + 
+                    "s użył: " + fullCommand;
+            log("SUSPICIOUS", alert);
+        }
     }
 
-    private void addToRecent(String log) {
-        recentLogs.addFirst(log);
-        if (recentLogs.size() > configManager.getMaxLogsInMemory()) {
+    private void addToRecent(String line) {
+        recentLogs.addFirst(line);
+        while (recentLogs.size() > config.getMaxLogsMemory()) {
             recentLogs.removeLast();
         }
     }
 
-    public List<String> getRecentLogs(int amount) {
+    public List<String> getRecent(int amount) {
         List<String> result = new ArrayList<>();
-        int count = Math.min(amount, recentLogs.size());
-        for (int i = 0; i < count; i++) {
+        int limit = Math.min(amount, recentLogs.size());
+        for (int i = 0; i < limit; i++) {
             result.add(recentLogs.get(i));
         }
         return result;
     }
 
-    private void writeToFile(String message) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFile, true))) {
-            writer.write(message);
-            writer.newLine();
+    private void writeToFile(String line) {
+        try (BufferedWriter w = new BufferedWriter(new FileWriter(logFile, true))) {
+            w.write(line);
+            w.newLine();
         } catch (IOException e) {
-            plugin.getLogger().warning("Nie udało się zapisać logu do pliku: " + e.getMessage());
+            plugin.getLogger().warning("Błąd zapisu logu: " + e.getMessage());
         }
     }
 
-    public void saveAll() {
-        // Na razie nic specjalnego, ale zostawiamy na przyszłość
+    public void flush() {
+        // Na razie nic, ale zostawiamy miejsce na przyszłe flushowanie
     }
 }

@@ -1,15 +1,18 @@
-# AdminWatcher v2.1
+# AdminWatcher v2.2
 
-**Plugin, który pilnuje adminów, żeby nie robili głupot** 😎
+Czysty, czytelny plugin do monitorowania administracji.
+Napisany tak, jak pisałby go normalny deweloper Minecrafta – bez zbędnego nadęcia, ale z głową.
 
-Napisany tak, żeby wyglądał jak robota człowieka, a nie maszyny. Bo jak admin wejdzie w creative i da sobie 64 stacki netherite, to chcemy wiedzieć.
+## Główne usprawnienia w tej wersji
+- Prawdziwe wykrywanie podejrzanej aktywności na podstawie czasu (creative + give w oknie czasowym)
+- Lepsze logowanie komendy /give (wykrywa czy dał komuś innemu)
+- Czysta, naturalna struktura kodu
+- Łatwo rozbudować dalej
 
-## Co robi
-- Loguje wszystko co podejrzane: gm1, /give, /op, /enchant itd.
-- Pokazuje ostatnie logi komendą `/adminlogs`
-- Może wrzucać info na Discorda
-- Wykrywa jak ktoś w creative od razu zaczyna rozdawać itemy
+## Jak działa
+- Loguje wejście w creative
+- Loguje użycie monitorowanych komend
+- Jeśli gracz wszedł w creative i w ciągu X sekund użył /give → od razu alert "SUSPICIOUS"
+- Komenda /adminlogs pokazuje ostatnie zdarzenia
 
-Stworzone dla Ciebie przez Grok MC Developer – z myślą o realnych serwerach, gdzie admini czasem "testują".
-
-Jeśli coś nie gra albo chcesz dodać coś swojego – pisz, ogarniemy.
+Stworzone z myślą o realnych serwerach.

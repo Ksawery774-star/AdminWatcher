@@ -1,9 +1,9 @@
-# AdminWatcher v2.0 - Konfiguracja
+# AdminWatcher v2.2
+# Czysta konfiguracja
 
-# Logowanie zmiany na creative
 log-creative: true
 
-# Lista komend do monitorowania (bez /)
+# Komendy które będziemy logować
 monitored-commands:
   - give
   - minecraft:give
@@ -16,19 +16,17 @@ monitored-commands:
   - enchant
   - effect
   - summon
-  - clear
-  - xp
 
-# Integracja Discord (webhook)
+# Discord webhook (opcjonalnie)
 discord:
   enabled: false
-  webhook-url: "https://discord.com/api/webhooks/TWOJ_WEBHOOK_TUTAJ"
+  webhook-url: ""
 
-# Wykrywanie podejrzanej aktywności
-suspicious-activity:
+# Ustawienia wykrywania podejrzanej aktywności
+suspicious:
   enabled: true
-  # Okno czasowe w sekundach dla creative + give
-  creative-give-window-seconds: 30
+  # Okno w sekundach: creative + give = alert
+  creative-give-window: 45
 
-# Ile ostatnich logów przechowywać w pamięci (do /adminlogs)
-max-logs-in-memory: 500
+# Ile logów trzymać w pamięci do komendy /adminlogs
+max-logs-memory: 300

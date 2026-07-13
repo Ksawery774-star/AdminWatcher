@@ -7,28 +7,25 @@ import pl.grokdev.adminwatcher.utils.LogManager;
 
 public class AdminLogsCommand implements CommandExecutor {
 
-    private final LogManager logManager;
+    private final LogManager logs;
 
-    public AdminLogsCommand(LogManager logManager) {
-        this.logManager = logManager;
+    public AdminLogsCommand(LogManager logs) {
+        this.logs = logs;
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        int amount = 10;
+        int count = 10;
         if (args.length > 0) {
             try {
-                amount = Integer.parseInt(args[0]);
-                if (amount < 1) amount = 10;
-                if (amount > 50) amount = 50;
+                count = Math.min(Math.max(Integer.parseInt(args[0]), 1), 50);
             } catch (NumberFormatException ignored) {}
         }
 
-        sender.sendMessage("\u00a7e=== Ostatnie " + amount + " logów administracji ===");
-        for (String log : logManager.getRecentLogs(amount)) {
-            sender.sendMessage(log);
+        sender.sendMessage("\u00a7e=== Ostatnie " + count + " logów ===");
+        for (String line : logs.getRecent(count)) {
+            sender.sendMessage(line);
         }
-        sender.sendMessage("\u00a77Pełne logi w pliku: plugins/AdminWatcher/admin-logs.log");
         return true;
     }
 }

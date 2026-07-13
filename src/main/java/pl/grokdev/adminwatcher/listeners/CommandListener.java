@@ -1,6 +1,5 @@
 package pl.grokdev.adminwatcher.listeners;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -11,53 +10,47 @@ import pl.grokdev.adminwatcher.utils.LogManager;
 
 import java.util.List;
 
+/**
+ * Słucha komend graczy i loguje te, które nas interesują.
+ * Proste i skuteczne.
+ */
 public class CommandListener implements Listener {
 
     private final AdminWatcher plugin;
     private final LogManager logManager;
-    private final ConfigManager configManager;
+    private final ConfigManager config;
 
-    public CommandListener(AdminWatcher plugin, LogManager logManager, ConfigManager configManager) {
+    public CommandListener(AdminWatcher plugin, LogManager logManager, ConfigManager config) {
         this.plugin = plugin;
         this.logManager = logManager;
-        this.configManager = configManager;
+        this.config = config;
     }
 
     @EventHandler
-    public void onPlayerCommand(PlayerCommandPreprocessEvent event) {
-        Player player = event.getPlayer();
-        if (player.hasPermission("adminwatcher.bypass")) return;
+    public void onCommand(PlayerCommandPreprocessEvent e) {
+        Player p = e.getPlayer();
+        if (p.hasPermission("adminwatcher.bypass")) return;
 
-        String message = event.getMessage().toLowerCase().trim();
-        String cmd = message.split(" ")[0].replace("/", "");
+        String msg = e.getMessage().toLowerCase().trim();
+        String cmdName = msg.split(" ")[0].replace("/", "");
 
-        List<String> monitored = configManager.getMonitoredCommands();
-        boolean shouldLog = false;
-
-        for (String monitoredCmd : monitored) {
-            if (cmd.equals(monitoredCmd.toLowerCase())) {
-                shouldLog = true;
-                break;
-            }
+        if (!config.getMonitoredCommands().contains(cmdName) && 
+            !config.getMonitoredCommands().contains("minecraft:" + cmdName)) {
+            return;
         }
 
-        if (shouldLog) {
-            // Tu logujemy co admin zrobił – żeby później nie było "a bo ja nie wiedziałem"
-            String logMessage = String.format("%s użył: %s | Świat: %s | x:%d y:%d z:%d",
-                    player.getName(),
-                    event.getMessage(),
-                    player.getWorld().getName(),
-                    player.getBlockX(), player.getBlockY(), player.getBlockZ());
+        // Logujemy komendę
+        String location = p.getWorld().getName() + " " + p.getBlockX() + "," + p.getBlockY() + "," + p.getBlockZ();
+        String logMsg = p.getName() + " wykonał: " + e.getMessage() + " | " + location;
+        logManager.log("COMMAND", logMsg);
 
-            logManager.log("COMMAND", logMessage, player);
-
-            // Jeśli gracz jest w creative i daje sobie rzeczy – od razu alert
-            if (configManager.isSuspiciousEnabled() && 
-                (cmd.equals("give") || cmd.equals("minecraft:give") || cmd.equals("i") || cmd.equals("item"))) {
-                if (player.getGameMode() == org.bukkit.GameMode.CREATIVE) {
-                    logManager.logSuspicious(player, "W creative użył /give – klasyka");
-                }
-            }
+        // Sprawdzamy czy to give i czy był niedawno w creative
+        if (config.isSuspiciousEnabled() && isGiveCommand(cmdName)) {
+            logManager.checkSuspiciousGive(p, e.getMessage());
         }
+    }
+
+    private boolean isGiveCommand(String cmd) {
+        return cmd.equals("give") || cmd.equals("minecraft:give") || cmd.equals("i") || cmd.equals("item");
     }
 }
